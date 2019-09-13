@@ -2,6 +2,11 @@ import os
 from datetime import datetime
 from flask import Flask, request, render_template, send_from_directory
 
+from flask import Flask, request, Response
+import jsonpickle
+import numpy as np
+import cv2
+from PIL import Image
 from subprocess import PIPE, run
 import time
 
@@ -10,6 +15,38 @@ __author__ = 'ibininja'
 app = Flask(__name__)
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+target = '/home/ashish/projects/DEEP/image-quality-assessment-master/src/tests/test_images/images/'
+
+@app.route("/flowimg", methods=['POST'])
+def flowimg():
+	r = request
+	global target
+	# print('<<<<<<<<<')
+	# print(request.files.getlist("file"))
+	print(r)
+	# convert string of image data to uint8
+	nparr = np.fromstring(r.data, np.uint8)
+	# decode image
+	print(1)
+	filename = 'testimage.jpg'
+	img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+	img = Image.fromarray(img, 'RGB')
+	if not os.path.isdir(target):
+		os.mkdir(target)
+	img.save(target+filename)
+	print(2)
+	response = {'message': 'image received. size={}x{}'.format(12,12)}
+	print(3)
+	resultis = runindocker("test")
+	print('<><><><.@')
+	print(resultis)
+	#return str(resultis)
+	response = {resultis}
+	# encode response using jsonpickle
+	response_pickled = jsonpickle.encode(response)
+
+	return Response(response=response_pickled, status=200, mimetype="application/json")
+
 
 
 @app.route("/")
@@ -21,7 +58,6 @@ IMG_DIR = ''
 def upload():
 	global IMG_DIR
 	target = os.path.join(APP_ROOT, 'images')
-	print(11111111111111111111111111111)
 	print(target)
 	IMG_DIR = target
 
@@ -55,9 +91,11 @@ def upload():
 
 def filecorrection():
 
+	 
 	root = os.getcwd()
 	os.chdir(os.path.join(os.getcwd(),IMG_DIR))
 	Param = os.getcwd()
+ 
 	from os import listdir
 	from os.path import isfile, join
 	onlyfiles = [f for f in listdir(os.getcwd()) if isfile(join(os.getcwd(), f))]
@@ -74,11 +112,13 @@ def filecorrection():
 	return runindocker(Param)
 
 def runindocker(directoryuri):
- 
-	fromPath = directoryuri
+	global target
 	toPath = r"/home/ashish/projects/DEEP/image-quality-assessment-master/src/tests/test_images"
-	os.system('sudo mv  {}/ {}/'.format(fromPath,toPath))
-	time.sleep(6)
+	if directoryuri!="test":
+		fromPath = directoryuri
+		os.system('sudo mv  {}/ {}/'.format(fromPath,toPath))
+		time.sleep(6)
+
 	os.chdir('/home/ashish/projects/DEEP/image-quality-assessment-master/')
 	xxx=os.getcwd()
 	print(xxx)
@@ -86,7 +126,10 @@ def runindocker(directoryuri):
 	#cmd=['echo','hello']
 	#command = 'sudo '
 	#print(command)
+	
+	print('Password E')
 	result = run(cmd, stdout=PIPE, stderr=PIPE, universal_newlines=True, shell=True)
+	os.system('2365')
 	os.chdir(toPath)
 	os.system('rm images -r')
 	print('---------------')
@@ -112,4 +155,4 @@ def runindocker(directoryuri):
 
 
 if __name__ == "__main__":
-	app.run(port=4555, debug=True)
+	app.run(port=5000, debug=True)
