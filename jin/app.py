@@ -10,7 +10,7 @@ from PIL import Image
 from subprocess import PIPE, run
 import time
 
-__author__ = 'ibininja'
+__author__ = 'akn'
 
 app = Flask(__name__)
 
@@ -128,6 +128,7 @@ def runindocker(directoryuri):
 	#print(command)
 	
 	print('Password E')
+	os.system('2365')
 	result = run(cmd, stdout=PIPE, stderr=PIPE, universal_newlines=True, shell=True)
 	os.system('2365')
 	os.chdir(toPath)
